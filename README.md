@@ -1,16 +1,23 @@
 # SmartDeals.lk
 
-PHP affiliate-deals website with product categories, product pages, and an XML sitemap.
+SmartDeals is an AliExpress affiliate-deals website. The Netlify deployment uses a static frontend and Netlify Functions; the original PHP implementation remains available in the repository but is not part of the Netlify publish directory.
 
-## Setup
+## Deploy to Netlify
 
-1. Use PHP 8+ with cURL and Apache `mod_rewrite` enabled.
-2. Copy `config.example.php` to `config.php`.
-3. Set your AliExpress `APP_KEY`, `APP_SECRET`, `TRACKING_ID`, and production `SITE_URL` in `config.php`. Keep this file private; it is excluded from Git.
-4. Ensure the web server can write `products.json` in this directory.
-5. Run `php fetch_products.php` from the command line to retrieve the first product cache. Schedule it to run periodically (the script comments recommend every six hours).
-6. Point the domain's document root at this directory and verify `.htaccess` is enabled.
+1. Push this repository to GitHub and import it in Netlify using **Add new site → Import an existing project**.
+2. Leave the build command empty. `netlify.toml` configures `public` as the publish directory and `netlify/functions` as the Functions directory.
+3. In **Site configuration → Environment variables**, add:
+   - `ALIEXPRESS_APP_KEY`
+   - `ALIEXPRESS_APP_SECRET`
+   - `ALIEXPRESS_TRACKING_ID`
+4. Trigger a deploy. Keep the AliExpress secret in Netlify environment variables; never add credentials to Git or the public directory.
 
-The public pages are `/`, `/category/{slug}`, `/product/{id}`, and `/sitemap.xml`.
+The site provides `/`, `/category/{slug}`, `/product/{id}?category={slug}`, `/api/products?category={slug}`, and `/sitemap.xml`. Product results are cached at Netlify's CDN for up to six hours. The product API uses the first five keyword searches for each category and returns up to five unique items.
 
-Do not commit `config.php` or `products.json`.
+## Local checks
+
+Run `npm test` with Node.js 18 or later. To preview through Netlify's local Functions runtime, install the Netlify CLI and run `netlify dev` after setting the same environment variables locally.
+
+## Original PHP deployment
+
+The root-level PHP pages and `fetch_products.php` are retained for PHP hosting. Copy `config.example.php` to `config.php`, configure its values, use PHP with cURL and Apache `mod_rewrite`, and keep `config.php` and `products.json` private. Netlify serves only the `public` directory and does not execute those PHP files.
